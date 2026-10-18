@@ -12,11 +12,6 @@ experiência (XP) e vê o quanto já cumpriu da meta semanal. O responsável
 acompanha esse progresso e recebe alertas. A coordenação tem uma visão
 geral de todos os alunos.
 
-Tudo o que é registrado na tela é gravado em um banco **MySQL** por meio de
-uma API em **C#**.
-
----
-
 ## O problema que o projeto resolve
 
 Durante o semestre, três situações costumam acontecer ao mesmo tempo:
