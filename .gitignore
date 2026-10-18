@@ -1,0 +1,26 @@
+# ===== Configuração local do MySQL (contém a SUA senha) =====
+# O backend recria este arquivo sozinho com "Pwd=;" se ele não existir.
+Backend/mysql_config.txt
+
+# ===== Dados gerados pelo backend no modo JSON (sem MySQL) =====
+Backend/dados_estudo_local.json
+
+# ===== Arquivos de build do C# (caso alguém compile o Source) =====
+Backend/Source/bin/
+Backend/Source/obj/
+bin/
+obj/
+*.user
+
+# ===== Editores =====
+.vs/
+.vscode/
+.idea/
+
+# ===== Node (se rodar os testes com npm algum dia) =====
+node_modules/
+
+# ===== Sistema operacional =====
+Thumbs.db
+desktop.ini
+.DS_Store

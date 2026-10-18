@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<!--
+  FecapStudy — página única (SPA simples, sem framework).
+  Estrutura:
+    1. <header>  topo com status do backend e usuário logado
+    2. #telaLogin  tela de login (visível no início)
+    3. #telaApp    tela principal (liberada após o login, conforme o perfil)
+    4. #toasts     avisos temporários
+    5. <script>    classes de domínio -> cliente HTTP -> demo -> app.js
+  Os elementos ligados ao JavaScript têm id; a aparência fica em css/style.css.
+  O atributo "hidden" liga/desliga as áreas pelo JavaScript.
+-->
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>FecapStudy — Plataforma de Apoio ao Estudo</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Topo: marca, status do backend (#statusPill) e usuário logado -->
+<header class="topo">
+    <div class="topo-conteudo">
+        <div class="marca">
+            <img class="marca-logo" src="img/logo.png" alt="Logo do FecapStudy">
+            <div>
+                <h1>FecapStudy</h1>
+            </div>
+        </div>
+        <div class="status-backend">
+            <span id="statusPill" class="pill pill-neutro">Verificando backend…</span>
+            <button id="btnTestarConexao" class="btn btn-claro" type="button">Testar conexão</button>
+            <div id="usuarioLogado" class="usuario-logado" hidden>
+                <span id="nomeLogado"></span>
+                <button id="btnSair" class="btn btn-claro" type="button">Sair</button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Tela de login -->
+<section id="telaLogin" class="tela-login">
+    <form id="formLogin" class="card login-card">
+        <h2>Entrar no FecapStudy</h2>
+        <p class="painel-texto">Cada perfil vê e faz coisas diferentes na plataforma.</p>
+        <label>E-mail
+            <input id="inpEmail" type="email" autocomplete="username" required>
+        </label>
+        <label>Senha
+            <input id="inpSenha" type="password" autocomplete="current-password" required>
+        </label>
+        <p id="erroLogin" class="erro-login" hidden>E-mail ou senha inválidos.</p>
+        <button class="btn btn-primario" type="submit">Entrar</button>
+
+        <div class="contas-teste">
+            <p>Contas de teste (clique para preencher):</p>
+            <div id="listaContas" class="lista-contas"></div>
+        </div>
+    </form>
+</section>
+
+<!-- Tela principal: fica escondida até o login -->
+<main id="telaApp" class="conteudo" hidden>
+
+    <!-- Cabeçalho de perfil (Missão 9) -->
+    <section class="grade-3">
+        <article class="card">
+            <div class="card-cabecalho">
+                <h2>Discente</h2>
+                <select id="selDiscente" aria-label="Escolher discente"></select>
+            </div>
+            <p class="xp-grande"><span id="xpDiscente">0</span> <small>XP</small></p>
+            <p id="painelDiscente" class="painel-texto"></p>
+        </article>
+
+        <article class="card">
+            <div class="card-cabecalho">
+                <h2>Responsável</h2>
+            </div>
+            <p id="painelResponsavel" class="painel-texto"></p>
+            <p id="avisoMeta" class="aviso-permissao" hidden>Só o responsável ou a coordenação podem alterar a meta.</p>
+            <form id="formMeta" class="linha-form">
+                <label for="inpMeta">Meta semanal (min)</label>
+                <div class="linha-campos">
+                    <input id="inpMeta" type="number" min="1" step="1" required>
+                    <button class="btn btn-secundario" type="submit">Definir meta</button>
+                </div>
+                <small class="dica">O valor fica entre 30 e 3000 min (regra da MetaEstudo).</small>
+            </form>
+        </article>
+
+        <article class="card">
+            <div class="card-cabecalho">
+                <h2>Meta da semana</h2>
+                <span id="badgeMeta" class="pill pill-neutro">Em andamento</span>
+            </div>
+            <p class="percentual"><span id="pctMeta">0</span>%</p>
+            <div class="barra" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="barraMeta">
+                <div class="barra-preenchida" id="barraMetaPreenchida"></div>
+            </div>
+            <p id="textoMeta" class="painel-texto"></p>
+        </article>
+    </section>
+
+    <!-- Formulário + histórico (Missão 9) -->
+    <section class="grade-2">
+        <article class="card">
+            <h2>Nova sessão de estudo</h2>
+            <p id="avisoSessao" class="aviso-permissao" hidden>
+                Só o próprio discente registra estudos. Entre com a conta do Lucas ou da Mariana para testar.
+            </p>
+            <form id="formSessao" class="form-sessao">
+                <label>Disciplina
+                    <select id="selDisciplina" required></select>
+                </label>
+
+                <label>Modalidade
+                    <select id="selModalidade">
+                        <option value="Pomodoro">Pomodoro</option>
+                        <option value="Exercicios">Exercícios</option>
+                        <option value="Leitura">Leitura</option>
+                    </select>
+                </label>
+
+                <label>Duração (minutos)
+                    <input id="inpDuracao" type="number" min="1" step="1" value="25" required>
+                </label>
+
+                <!-- Campos extras: só o grupo da modalidade escolhida aparece -->
+                <div class="extra" data-modalidade="Pomodoro">
+                    <label>Ciclos completos
+                        <input id="inpCiclos" type="number" min="0" step="1" value="1">
+                    </label>
+                </div>
+                <div class="extra" data-modalidade="Exercicios" hidden>
+                    <label>Total de questões
+                        <input id="inpQuestoes" type="number" min="0" step="1" value="10">
+                    </label>
+                    <label>Acertos
+                        <input id="inpAcertos" type="number" min="0" step="1" value="7">
+                    </label>
+                </div>
+                <div class="extra" data-modalidade="Leitura" hidden>
+                    <label>Páginas lidas
+                        <input id="inpPaginas" type="number" min="0" step="1" value="10">
+                    </label>
+                    <label class="check">
+                        <input id="chkResumo" type="checkbox" checked> Fiz resumo
+                    </label>
+                </div>
+
+                <p id="previaXp" class="previa"></p>
+
+                <div class="acoes">
+                    <button class="btn btn-primario" type="submit">Registrar Estudo</button>
+                    <button id="btnRapido" class="btn btn-secundario" type="button"
+                            title="Usa a sobrecarga registrarEstudo(disciplina, minutos): cria um Pomodoro padrão">
+                        Registro rápido
+                    </button>
+                </div>
+            </form>
+        </article>
+
+        <article class="card">
+            <div class="card-cabecalho">
+                <h2>Histórico desta sessão</h2>
+                <span class="contador" id="contHistorico">0</span>
+            </div>
+            <ul id="listaHistorico" class="lista-historico"></ul>
+            <p id="historicoVazio" class="vazio">Nenhum estudo registrado ainda. Use o formulário ao lado.</p>
+
+            <div class="notificar">
+                <label for="selCanal">Notificar responsável por</label>
+                <div class="linha-campos">
+                    <select id="selCanal">
+                        <option value="email">E-mail</option>
+                        <option value="whatsapp">WhatsApp</option>
+                        <option value="painel">Painel</option>
+                    </select>
+                    <button id="btnNotificar" class="btn btn-secundario" type="button">Notificar Responsável</button>
+                </div>
+            </div>
+        </article>
+    </section>
+
+    <!-- Dados do servidor (Missão 10) -->
+    <section class="card">
+        <div class="card-cabecalho">
+            <div>
+                <h2>Dados gravados no servidor</h2>
+                <p class="painel-texto">Vêm do BackendEstudoAPI (MySQL <code>fecap_estudo</code> ou JSON local).</p>
+            </div>
+            <button id="btnCarregarServidor" class="btn btn-primario" type="button">Carregar Histórico do Servidor / Relatório</button>
+        </div>
+        <div id="relatorio" hidden>
+            <div class="grade-4">
+                <div class="numero"><span id="relSessoes">0</span><small>sessões</small></div>
+                <div class="numero"><span id="relMinutos">0</span><small>minutos estudados</small></div>
+                <div class="numero"><span id="relXp">0</span><small>XP acumulado</small></div>
+                <div class="numero"><span id="relPct">0</span><small>% da meta de <b id="relMeta">0</b> min</small></div>
+            </div>
+            <p id="relStatus" class="relatorio-status"></p>
+            <div class="tabela-rolagem">
+                <table>
+                    <thead>
+                    <tr><th>#</th><th>Data</th><th>Disciplina</th><th>Modalidade</th><th>Min</th><th>XP</th><th>Feedback</th></tr>
+                    </thead>
+                    <tbody id="tabelaServidor"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Programa principal das Missões 1 a 8 -->
+    <section class="card">
+        <div class="card-cabecalho">
+            <div>
+                <h2>Demonstração das Missões 1 a 8</h2>
+                <p class="painel-texto">Instancia os objetos de cada missão e mostra os testes de mesa pedidos nas dicas.</p>
+            </div>
+            <button id="btnDemo" class="btn btn-secundario" type="button">Rodar demonstração</button>
+        </div>
+        <pre id="saidaDemo" class="saida" hidden></pre>
+    </section>
+</main>
+
+<!-- Avisos temporários (preenchidos por mostrarToast em app.js) -->
+<div id="toasts" class="toasts" aria-live="polite"></div>
+
+<!-- Ordem importa: interfaces e classes base antes das filhas -->
+<script src="js/dominio/01-Disciplina.js"></script>
+<script src="js/dominio/02-Interfaces.js"></script>
+<script src="js/dominio/03-MetaEstudo.js"></script>
+<script src="js/dominio/04-Usuario.js"></script>
+<script src="js/dominio/05-SessaoEstudo.js"></script>
+<script src="js/dominio/06-Discente.js"></script>
+<script src="js/dominio/07-Responsavel.js"></script>
+<script src="js/dominio/08-Notificadores.js"></script>
+<script src="js/dominio/09-TrilhaEstudo.js"></script>
+<script src="js/dominio/10-PlanoEstudo.js"></script>
+<script src="js/dominio/11-ServicoAlertaResponsavel.js"></script>
+<script src="js/ClienteBackendEstudo.js"></script>
+<script src="js/demo-missoes.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
